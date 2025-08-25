@@ -8,6 +8,7 @@ from aiogram.exceptions import TelegramForbiddenError
 from keyboards import menu_kb, pay_kb
 from config import settings
 from utils import create_yoo_payment
+from bot_integration import register_user_from_bot, log_message_from_bot
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,6 +27,14 @@ class GenState(StatesGroup):
 @router.message(CommandStart())
 async def start_handler(message: types.Message) -> None:
     try:
+        # Register user in database
+        user = register_user_from_bot(message.from_user)
+        if user:
+            logger.info(f"User {message.from_user.id} registered/updated in database")
+        
+        # Log the start command
+        log_message_from_bot(message.from_user.id, "/start", "command")
+        
         await message.answer(
             "👋 Привет! Я AI-бот, который генерирует email-рассылки.\n"
             "Нажми «Сгенерировать» чтобы начать.",
